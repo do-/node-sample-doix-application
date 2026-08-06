@@ -1,0 +1,11 @@
+{
+        "workers": null,
+        "logs": {
+                "console": false,
+                "rotate": {
+                        "datePattern": "YYYY-MM-DD_HH",
+                        "createSymlink": true
+                },
+                "dir": "/var/log/sample_application"
+        }
+}
