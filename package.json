@@ -36,6 +36,7 @@
   },
   "peerDependencies": {
     "doix": "^1.0.66",
+    "doix-db-clickhouse": "^1.0.82",
     "doix-http": "^1.0.18"
   },
   "devDependencies": {
