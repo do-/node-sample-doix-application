@@ -75,4 +75,6 @@ else {
 
 	process.on ('message', request => app.run (request))
 
+    app.run ({type: 'worker_process', action: 'create'})
+
 }
