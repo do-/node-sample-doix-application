@@ -73,4 +73,6 @@ else {
 
     blockSignals ()
 
+	process.on ('message', request => app.run (request))
+
 }
