@@ -68,13 +68,17 @@ if (cluster.isPrimary) {
 
     setLogRotate ()
 
+    cluster.on ('message', (_, request) => app.run (request))
+
 }
 else {
 
     blockSignals ()
 
-	process.on ('message', request => app.run (request))
-
     app.run ({type: 'worker_process', action: 'create'})
 
+    process.on ('message', request => app.run (request))
+
 }
+
+	
