@@ -50,11 +50,23 @@ function checkDefaultMaxListeners () {
 
 }
 
+function setLogRotate () {
+
+    for (const {logStream} of logger.transports)
+        
+        if (logStream != null)
+            
+            logStream.on ('rotate', id => app.run ({type: 'log', action: 'move', id}))
+
+}
+
 if (cluster.isPrimary) {
 
-    setSignals ()
+    setSignals ()    
 
     checkDefaultMaxListeners ()
+
+    setLogRotate ()
 
 }
 else {
