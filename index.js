@@ -1,14 +1,15 @@
-const process     = require ('node:process')
-const cluster     = require ('node:cluster')
-const conf        = require ('./lib/app/Conf')
-const logger      = require ('./lib/app/Logger.js') (conf)
-const app         = new (require ('./lib/app/Application.js')) (conf, logger)
+const EXIT_SIGNALS = ['SIGTERM', 'SIGINT', 'SIGBREAK']
 
-const SIGS = ['SIGTERM', 'SIGINT', 'SIGBREAK']
+const process        = require ('node:process')
+const cluster        = require ('node:cluster')
+
+const conf           = require ('./lib/app/Conf')
+const logger         = require ('./lib/app/Logger.js') (conf)
+const app            = new (require ('./lib/app/Application.js')) (conf, logger)
 
 function blockSignals () {
 
-    for (const signal of SIGS) process.on (signal, _ => {})
+    for (const signal of EXIT_SIGNALS) process.on (signal, _ => {})
 
 }
 
@@ -18,7 +19,7 @@ async function exit () {
 
     try {
 
-        if (app) await app.exec ({type: 'primary_process', action: 'delete'})
+        await app.exec ({type: 'primary_process', action: 'delete'})
 
         logger.on ('finish', () => setTimeout (() => process.exit (0), 10)) 
 
@@ -35,13 +36,29 @@ async function exit () {
 
 }
 
+function setSignals () {
+
+    for (const exitSignal of EXIT_SIGNALS) process.once (exitSignal, exit)
+
+}
+
+function checkDefaultMaxListeners () {
+
+    const {workers} = conf, {EventEmitter} = require ('events')
+    
+    if (EventEmitter.defaultMaxListeners < workers) EventEmitter.defaultMaxListeners = workers
+
+}
+
 if (cluster.isPrimary) {
 
-    for (const signal of SIGS) process.once (signal, exit)
+    setSignals ()
+
+    checkDefaultMaxListeners ()
 
 }
 else {
 
-   blockSignals ()
+    blockSignals ()
 
 }
