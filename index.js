@@ -1,84 +1,9 @@
-const EXIT_SIGNALS = ['SIGTERM', 'SIGINT', 'SIGBREAK']
+const conf   = require ('./lib/app/Conf')
 
-const process        = require ('node:process')
-const cluster        = require ('node:cluster')
+const logger = require ('./lib/app/Logger') (conf)
 
-const conf           = require ('./lib/app/Conf')
-const logger         = require ('./lib/app/Logger.js') (conf)
-const app            = new (require ('./lib/app/Application.js')) (conf, logger)
+const app    = new (require (`./lib/app/Application/${
 
-function blockSignals () {
+    require ('node:cluster').isPrimary ? 'Primary' : 'Worker'
 
-    for (const signal of EXIT_SIGNALS) process.on (signal, _ => {})
-
-}
-
-async function exit () {
-
-    blockSignals ()
-
-    try {
-
-        await app.exec ({type: 'primary_process', action: 'delete'})
-
-        logger.on ('finish', () => setTimeout (() => process.exit (0), 10)) 
-
-        logger.end ()
-
-    }
-    catch (err)  {
-
-        console.log (err)
-
-        process.exit (1)
-
-    }
-
-}
-
-function setSignals () {
-
-    for (const exitSignal of EXIT_SIGNALS) process.once (exitSignal, exit)
-
-}
-
-function checkDefaultMaxListeners () {
-
-    const {workers} = conf, {EventEmitter} = require ('events')
-    
-    if (EventEmitter.defaultMaxListeners < workers) EventEmitter.defaultMaxListeners = workers
-
-}
-
-function setLogRotate () {
-
-    for (const {logStream} of logger.transports)
-        
-        if (logStream != null)
-            
-            logStream.on ('rotate', id => app.run ({type: 'log', action: 'move', id}))
-
-}
-
-if (cluster.isPrimary) {
-
-    setSignals ()    
-
-    checkDefaultMaxListeners ()
-
-    setLogRotate ()
-
-    cluster.on ('message', (_, request) => app.run (request))
-
-}
-else {
-
-    blockSignals ()
-
-    app.run ({type: 'worker_process', action: 'create'})
-
-    process.on ('message', request => app.run (request))
-
-}
-
-	
+}`)) (conf, logger)
