@@ -2,7 +2,7 @@
   "name": "sample-doix-application",
   "version": "1.0.0",
   "dependencies": {
-    "protocol-agnostic-router": "^1.0.3",
+    "protocol-agnostic-router": "^1.0.4",
     "string-normalize-space": "^1.0.1",
     "uniqid": "^5.4.0",
     "winston-daily-rotate-file": "^5.0.0"
